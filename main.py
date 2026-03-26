@@ -15,8 +15,9 @@ so an unhandled exception in a job does NOT silently kill the scheduler.
 import logging
 import os
 import sys
+import time
 
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 # ----------------------------------------------------------------
@@ -136,19 +137,16 @@ if __name__ == "__main__":
         hour_aest, minute = map(int, schedule_time.split(":"))
         hour_utc = (hour_aest - 10) % 24  # AEST → UTC
 
-        scheduler = BlockingScheduler(timezone="UTC")
+        scheduler = BackgroundScheduler(timezone="UTC")
         scheduler.add_job(
             make_job(cfg),
             CronTrigger(day_of_week="mon", hour=hour_utc, minute=minute),
-            misfire_grace_time=120,   # Accept up to 2 min late (boot delay tolerance)
-            coalesce=True,            # If multiple missed, fire once only
-            max_instances=1,          # Never run two jobs simultaneously
+            misfire_grace_time=120,
+            coalesce=True,
+            max_instances=1,
         )
 
-        logger.info(
-            "Scheduler started | fires every Monday at %s AEST (%02d:%02d UTC)",
-            schedule_time, hour_utc, minute,
-        )
+        scheduler.start()
         print(
             f"\n  [OK]    DCA Bot running  | mode={mode.upper()}\n"
             f"  [TIME]  Weekly buy       | Monday {schedule_time} AEST\n"
@@ -156,9 +154,12 @@ if __name__ == "__main__":
         )
 
         try:
-            scheduler.start()
+            # Keep the main thread alive so it can catch Ctrl+C
+            while True:
+                time.sleep(1)
         except (KeyboardInterrupt, SystemExit):
             logger.info("Bot shut down by user (KeyboardInterrupt).")
+            scheduler.shutdown(wait=False)
             print("\n  Bot stopped.\n")
 
     else:
