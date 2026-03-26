@@ -1,0 +1,45 @@
+# ============================================================
+# DCA Bot — Runtime Configuration
+# ============================================================
+# All non-secret parameters live here.
+# API keys live in .env only — never add them to this file.
+# Switch between phases by changing `mode` only.
+# ============================================================
+
+# Operating mode — change manually to advance phases.
+# Options: backtest | forward_test | live
+mode: backtest
+
+# Binance trading pair
+trading_pair: BTCAUD
+
+# ⚠️  OPEN QUESTION: Set your weekly AUD buy amount here before running.
+# This is the only value you must decide. Common choices: 50, 100, 200, 250
+buy_amount_aud: 100
+
+# ----------------------------------------------------------
+# Schedule (used in forward_test and live modes)
+# ----------------------------------------------------------
+schedule:
+  day: monday
+  time: "09:00"   # AEST — the bot converts this to UTC internally (23:00 UTC)
+
+# ----------------------------------------------------------
+# Backtest settings (used in backtest mode only)
+# ----------------------------------------------------------
+backtest:
+  start_date: "2021-01-01"
+  end_date: "2024-01-01"
+  data_source: binance   # Uses Binance public historical klines endpoint
+
+# ----------------------------------------------------------
+# Safety settings (used in forward_test and live modes)
+# ----------------------------------------------------------
+safety:
+  # Skip the buy and log a warning if free AUD balance falls
+  # below (buy_amount_aud + min_balance_aud).
+  min_balance_aud: 10
+  # Number of retry attempts for retryable network errors only.
+  # BinanceAPIException (exchange rejection) is never retried.
+  max_retries: 3
+  retry_delay_seconds: 30

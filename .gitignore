@@ -1,0 +1,30 @@
+# Secrets — never commit
+.env
+
+# Bot runtime output — regenerated on each run
+data/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Antigravity exts
+*.egg-info/
+dist/
+build/
