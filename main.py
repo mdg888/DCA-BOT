@@ -74,8 +74,8 @@ def make_job(cfg: dict):
         fn = lambda: run_forward_test(cfg)
 
     elif mode == "live":
-        from bot.live import run_live
-        fn = lambda: run_live(cfg)
+        from bot.live import run_live_trade
+        fn = lambda: run_live_trade(cfg)
 
     else:
         raise ValueError(

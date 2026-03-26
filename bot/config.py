@@ -59,9 +59,12 @@ def load_config(path: str = "config.yaml") -> dict:
 
     # ----------------------------------------------------------------
     # 2. Inject API keys from .env — never stored in config.yaml
-    # ----------------------------------------------------------------
-    cfg["api_key"] = os.getenv("BINANCE_API_KEY", "").strip()
-    cfg["api_secret"] = os.getenv("BINANCE_API_SECRET", "").strip()
+    # ----------------------------------------------------------------    # Load keys from .env
+    api_key = os.getenv("BINANCE_API_KEY", "")
+    api_secret = os.getenv("BINANCE_API_SECRET", "")
+    
+    cfg["api_key"] = api_key.strip() if api_key else ""
+    cfg["api_secret"] = api_secret.strip() if api_secret else ""
 
     # ----------------------------------------------------------------
     # 3. Validate required fields — fail at startup, not mid-trade
