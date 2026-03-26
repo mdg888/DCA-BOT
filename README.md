@@ -1,24 +1,24 @@
-# 🤖 DCA Trading Bot
+# 🤖 DCA Trading Bot (BTCAUD)
 
-A robust, set-and-forget Dollar-Cost Averaging (DCA) trading bot built in Python.
+A professional, industrial-grade Dollar-Cost Averaging (DCA) trading bot built in Python.
 
-This bot automatically purchases a fixed fiat amount of Bitcoin (or any cryptocurrency) on a scheduled weekly basis using the Binance API. It's designed to run silently in the background (e.g., on a Raspberry Pi or VPS) and log every trade to a local SQLite database for easy tracking.
+This bot automatically purchases a fixed fiat amount of Bitcoin on a scheduled weekly basis using the Binance API. It features a triple-phase architecture (Backtest → Paper Trade → Live) to ensure your strategy is profitable and safe before risking real capital.
 
 ---
 
 ## 🏗️ Architecture & Features
 
-### The Three Phases
-The bot is built to explicitly progress through three stages, configurable strictly via `config.yaml`:
-1. **`backtest`:** Pulls public historical weekly data (klines) from Binance and simulates Monday buys over a specified time period. Outputs total ROI, average buy price, and compares performance against simply holding.
-2. **`forward_test`:** *(In Development)* Connects to the real Binance ticker on a live weekly schedule and logs simulated buys if a mock balance is sufficient. No real orders are placed.
-3. **`live`:** *(In Development)* The real deal. Connects to your Binance account, validates balance, prevents duplicate runs, and places real market buy orders every Monday.
+### The Legend of Three Phases
+The bot is designed to explicitly progress through three stages, configurable via `config.yaml`:
+1. **`backtest`:** Simulates historical Monday buys using real 1W klines from Binance. Calculates ROI vs. Market performance.
+2. **`forward_test`:** Paper trading. Fetches live prices every Monday and logs simulated trades against a mock `simulated_balance_aud`. No real money is spent.
+3. **`live`:** Advanced spot trading. Performs real balance checks, duplicate order protection, and executes market buys via `quoteOrderQty`.
 
-### Key Features
-- **Config-Driven:** Everything from the trading pair, buy amount, operating mode, and safety margins is controlled externally via `config.yaml`.
-- **Absolute Safety:** The bot enforces strict Phase boundaries. Real orders can only be placed in `live` mode. It also includes kill-switches (won't buy if fiat balance is too low) and duplicate-order guards (will only buy once per Monday).
-- **Graceful Error Handling:** If Binance rejects an order (e.g., insufficient funds), it halts safely. If a network timeout occurs, it retries. If the retry fails, the job fails gracefully without killing the background scheduler.
-- **Data Persistence:** Every simulated or real trade is written to `data/trades.db` (a local SQLite file) using identical columns, meaning your backtest logic and live tracking share the exact same database.
+### 🛡️ Safety-First Engineering
+- **Duplicate Guard:** Checks the SQLite database 48 hours prior to every trade. If a `live` trade was already logged this week, it refuses to run again—protecting you from accidental double-spending.
+- **Kill Switch:** Automatically aborts the trade if your AUD spot balance falls below your `min_balance_aud` threshold.
+- **Network Resilience:** Implements a 3x retry loop for Binance API timeouts during volatile market conditions.
+- **SQLite Persistence:** Every phase logs to the same shared table in `data/trades.db` for unified history tracking.
 
 ---
 
@@ -27,10 +27,9 @@ The bot is built to explicitly progress through three stages, configurable stric
 ### 1. Requirements
 - Python 3.10+
 - A Binance Account
-- Binance API Keys (*Read Only* permissions needed for Backtesting/Forward Testing. *Spot Trading* needed for Live. **Never enable Withdrawals**).
+- API Keys with "Spot Trading" enabled (Never enable withdrawals).
 
 ### 2. Installation
-Clone the repository and install the pinned dependencies:
 ```bash
 git clone <your-repo-url>
 cd DCA-BOT
@@ -38,32 +37,39 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configuration
-**Environment Variables (API Keys)**
-Copy the template to create your `.env` file:
-```bash
-copy .env.example .env     # Windows
-cp .env.example .env       # Mac/Linux
+**Secrets (`.env`)**
+Rename `.env.example` to `.env` and add your `BINANCE_API_KEY` and `BINANCE_API_SECRET`.
+
+**Strategy (`config.yaml`)**
+```yaml
+mode: forward_test       # Start here!
+trading_pair: BTCAUD
+buy_amount_aud: 100
+schedule:
+  time: "09:00"          # AEST (Monday Morning)
 ```
-Add your Binance keys to the `.env` file. These are never committed to version control.
 
-**Bot Settings (`config.yaml`)**
-Open `config.yaml` to adjust your strategy.
-- Set `mode: backtest` to test historical performance.
-- Set `buy_amount_aud: 100` (or whatever amount you wish to spend per week).
-- Set `trading_pair: BTCAUD` (Buy BTC with AUD. For USD, use `BTCUSDT`).
+---
 
-### 4. Running the Bot
-Everything is routed through the main entry point:
+## 🧪 Verification & Testing
+
+Before going live, it is **strongly recommended** to run the unit test suite to verify your local environment:
+
+```bash
+python -m unittest discover -v
+```
+This runs 10 exhaustive tests covering config validation, database integrity, and safety-guard logic—all without hitting the real API.
+
+---
+
+## 📊 Running the Bot
+
+Start the bot in your chosen mode:
 ```bash
 python main.py
 ```
+The bot will verify your configuration and enter a wait loop. Press **`Ctrl + C`** at any time to shut down safely.
 
 ---
 
-## 📊 Viewing Your Trades
-Every action the bot takes is logged to the database (`data/trades.db`).
-You can query this directly using Python, or use a GUI tool like [DB Browser for SQLite](https://sqlitebrowser.org/) to view, sort, and export your trade history to Excel.
-
----
-
-*Note: This bot is a solo-developer project tailored for long-term set-and-forget acquisition. It is not designed for high-frequency trading.*
+*Disclaimer: Trading involves risk. Use this bot at your own discretion. The developer is not responsible for financial losses incurred via automated trading.*

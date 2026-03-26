@@ -8,7 +8,7 @@
 
 # Operating mode — change manually to advance phases.
 # Options: backtest | forward_test | live
-mode: live
+mode: backtest
 
 # Binance trading pair
 trading_pair: BTCAUD
