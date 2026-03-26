@@ -150,9 +150,9 @@ if __name__ == "__main__":
             schedule_time, hour_utc, minute,
         )
         print(
-            f"\n  ✅  DCA Bot running — mode={mode.upper()}\n"
-            f"  ⏰  Weekly buy: Monday {schedule_time} AEST\n"
-            f"  ℹ️   Press Ctrl+C to stop.\n"
+            f"\n  [OK]    DCA Bot running  | mode={mode.upper()}\n"
+            f"  [TIME]  Weekly buy       | Monday {schedule_time} AEST\n"
+            f"  [INFO]  Press Ctrl+C to stop.\n"
         )
 
         try:

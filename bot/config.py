@@ -121,4 +121,15 @@ def load_config(path: str = "config.yaml") -> dict:
         if not cfg.get("safety"):
             sys.exit("[FATAL] config.yaml is missing the 'safety' section.")
 
+    # Validate forward_test mock balance
+    if cfg["mode"] == "forward_test":
+        if not cfg.get("forward_test"):
+            sys.exit("[FATAL] config.yaml is missing the 'forward_test' section.")
+        try:
+            cfg["forward_test"]["simulated_balance_aud"] = float(
+                cfg["forward_test"].get("simulated_balance_aud", 1000.0)
+            )
+        except (TypeError, ValueError):
+            sys.exit("[FATAL] 'simulated_balance_aud' must be a number.")
+
     return cfg
